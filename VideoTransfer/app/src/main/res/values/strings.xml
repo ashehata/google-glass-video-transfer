@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">VideoTransfer</string>
+    <string name="title_activity_main">Video Send</string>
+    <string name="hello_world">Hello world!</string>
+</resources>
