@@ -7,6 +7,7 @@ import com.google.android.glass.widget.CardScrollAdapter;
 import com.google.android.glass.widget.CardScrollView;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 
 import android.os.AsyncTask;
+import android.widget.ProgressBar;
 
 import java.io.BufferedOutputStream;
 import java.io.ObjectOutputStream;
@@ -28,6 +30,7 @@ import java.io.OutputStream;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+
 
 public class MainActivity extends Activity {
 
@@ -108,7 +111,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == TAKE_PICTURE_REQUEST && resultCode == RESULT_OK) {
             String videoPath = data.getStringExtra(Intents.EXTRA_VIDEO_FILE_PATH);
-            new doitAsync(videoPath).execute();
+            new VideoSender(videoPath, this).execute();
         }
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -117,16 +120,20 @@ public class MainActivity extends Activity {
 }
 
 
-class doitAsync extends AsyncTask<Void, Integer, Integer> {
+class VideoSender extends AsyncTask<Void, Integer, Integer> {
     private String filePath;
-
-    doitAsync(String path){
+    private ProgressDialog dialog;
+    VideoSender(String path, Activity activity){
         filePath = path;
+        dialog = ProgressDialog.show(activity, "", "Uploading Video...", true);
     }
     @Override
     protected void onPostExecute(Integer result) {
         if (result == -1) {
             System.exit(0);
+        }
+        else{
+            dialog.dismiss();
         }
     }
 
@@ -136,9 +143,9 @@ class doitAsync extends AsyncTask<Void, Integer, Integer> {
         ObjectOutputStream get = null;
 
         try {
-            s = new Socket("192.168.1.10", 8888);
+            s = new Socket("192.168.1.84", 8888);
             get = new ObjectOutputStream(s.getOutputStream());
-            byte[] bytearray = new byte[1024*16];
+            byte[] bytearray = new byte[1024 * 16];
             int u = 0;
             FileInputStream fis = new FileInputStream(filePath);
             BufferedInputStream bis = new BufferedInputStream(fis);
@@ -150,6 +157,7 @@ class doitAsync extends AsyncTask<Void, Integer, Integer> {
             }
             System.out.println("Sent: " + u + " Bytes");
             System.out.println("File sent");
+            dialog.dismiss();
 
             bis.close();
             get.close();
