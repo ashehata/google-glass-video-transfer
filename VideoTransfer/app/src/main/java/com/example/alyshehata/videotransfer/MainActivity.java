@@ -7,6 +7,8 @@ import com.google.android.glass.widget.CardScrollAdapter;
 import com.google.android.glass.widget.CardScrollView;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -19,7 +21,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 
 import android.os.AsyncTask;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.content.DialogInterface;
 
 import java.io.BufferedOutputStream;
 import java.io.ObjectOutputStream;
@@ -27,7 +31,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.io.FileInputStream;
 import java.io.OutputStream;
-
+import java.net.ConnectException;
 import java.io.BufferedInputStream;
 import java.io.File;
 
@@ -122,49 +126,106 @@ public class MainActivity extends Activity {
 
 class VideoSender extends AsyncTask<Void, Integer, Integer> {
     private String filePath;
+    private Activity myActivity;
     private ProgressDialog dialog;
+    private AlertDialog successDialog;
+    private AlertDialog errorDialog;
+    private boolean success = false;
+    AlertDialog.Builder builder;
     VideoSender(String path, Activity activity){
+        myActivity = activity;
         filePath = path;
-        dialog = ProgressDialog.show(activity, "", "Uploading Video...", true);
+        dialog = new ProgressDialog(activity);
+        dialog.setTitle("Uploading...");
+        dialog.setCancelable(true);
+        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        dialog.setProgressNumberFormat(null);
+        dialog.setProgressPercentFormat(null);
+        dialog.setIndeterminate(false);
+        dialog.setProgress(0);
+    }
+    @Override
+    protected void onPreExecute(){
+        builder = new AlertDialog.Builder(myActivity);
+        builder.setMessage("Error!")
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+        errorDialog = builder.create();
+        builder.setMessage("Success!")
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+        successDialog = builder.create();
+        dialog.show();
     }
     @Override
     protected void onPostExecute(Integer result) {
+        dialog.dismiss();
+        if (success){
+            successDialog.show();
+        }
+        else{
+            errorDialog.show();
+        }
         if (result == -1) {
             System.exit(0);
         }
-        else{
-            dialog.dismiss();
-        }
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... progress) {
+        dialog.setProgress(progress[0]);
     }
 
     @Override
     protected Integer doInBackground(Void... params) {
         Socket s = null;
         ObjectOutputStream get = null;
-
         try {
-            s = new Socket("192.168.1.84", 8888);
-            get = new ObjectOutputStream(s.getOutputStream());
-            byte[] bytearray = new byte[1024 * 16];
-            int u = 0;
-            FileInputStream fis = new FileInputStream(filePath);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-
-            int readLength = -1;
-            while ((readLength = bis.read(bytearray)) > 0) {
-                get.write(bytearray, 0, readLength);
-                u = u + readLength;
+            try {
+                s = new Socket("192.168.1.84", 8888);
             }
-            System.out.println("Sent: " + u + " Bytes");
-            System.out.println("File sent");
-            dialog.dismiss();
+            catch (ConnectException connectionFailed){
+                System.out.println("Failed to connect!");
+                return 0;
+            }
+            get = new ObjectOutputStream(s.getOutputStream());
+            long u = 0;
+            long fileLength = new File(filePath).length();
+            FileInputStream fileInputStream  = new FileInputStream(filePath);
+            byte[] buf=new byte[8192];
+            int bytesread = 0, bytesBuffered = 0;
+            while( (bytesread = fileInputStream.read( buf )) > -1 ) {
+                get.write( buf, 0, bytesread );
+                bytesBuffered += bytesread;
+                u = u + bytesread;
+                publishProgress((int) (u * 100 / fileLength));
+                if (bytesBuffered > 1024 * 1024) { //flush after 1MB
+                    bytesBuffered = 0;
+                    get.flush();
+                }
+            }
+            success = true;
+            if (get != null) {
+                get.close();
+                get.flush();
+            }
+            if (s != null) {
+                s.close();
+            }
 
-            bis.close();
-            get.close();
-            s.close();
         } catch (Exception e) {
             e.printStackTrace();
-            return -1; // failed
+        }
+        finally {
+
         }
         return 0;
     }

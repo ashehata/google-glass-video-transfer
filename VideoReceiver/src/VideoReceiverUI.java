@@ -13,11 +13,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 public class VideoReceiverUI {
 	private String savePath = "";
@@ -72,11 +76,6 @@ public class VideoReceiverUI {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
-		savePathInput = new JTextField();
-		savePathInput.setBounds(17, 59, 274, 28);
-		frame.getContentPane().add(savePathInput);
-		savePathInput.setColumns(10);
-		
 		commandFileInput = new JTextField();
 		commandFileInput.setColumns(10);
 		commandFileInput.setBounds(17, 120, 274, 28);
@@ -101,9 +100,9 @@ public class VideoReceiverUI {
 				}
 			}
 		});
-		btnNewButton.setBounds(292, 60, 117, 29);
+		btnNewButton.setBounds(292, 59, 117, 29);
 		frame.getContentPane().add(btnNewButton);
-		
+				
 		JButton button = new JButton("Browse");
 		button.setBounds(292, 121, 117, 29);
 		frame.getContentPane().add(button);
@@ -112,7 +111,7 @@ public class VideoReceiverUI {
 		lblStatus.setBounds(17, 6, 61, 16);
 		frame.getContentPane().add(lblStatus);
 		
-		JLabel statusLabel = new JLabel("Not Ready");
+		final JLabel statusLabel = new JLabel("Not Ready");
 		statusLabel.setBounds(90, 6, 201, 16);
 		frame.getContentPane().add(statusLabel);
 		
@@ -121,6 +120,12 @@ public class VideoReceiverUI {
 			public void actionPerformed(ActionEvent e) {
 				if (btnStartListening.getText().equals("Start Listening")){
 				btnStartListening.setText("Stop Listening");
+				try {
+					System.out.println(InetAddress.getLocalHost());
+				} catch (UnknownHostException e3) {
+					// TODO Auto-generated catch block
+					e3.printStackTrace();
+				}
 				listeningThread = new Thread(new Runnable(){
 					public void run(){
 						while (true){
@@ -137,6 +142,7 @@ public class VideoReceiverUI {
 							e1.printStackTrace();
 						}
 				        System.out.println("Receiving...");
+				        statusLabel.setText("Receiving...");
 				        try{
 				        ObjectInputStream put = new ObjectInputStream(
 				                client.getInputStream());
@@ -189,17 +195,23 @@ public class VideoReceiverUI {
 
 			}
 		});
-		btnStartListening.setBounds(405, 302, 117, 29);
+		btnStartListening.setBounds(17, 280, 117, 29);
 		frame.getContentPane().add(btnStartListening);
+		
+		savePathInput = new JTextField();
+		savePathInput.setBounds(17, 59, 274, 28);
+		frame.getContentPane().add(savePathInput);
+		savePathInput.setColumns(10);
+
 		
 		portNumberInput = new JTextField();
 		portNumberInput.setText("8888");
-		portNumberInput.setBounds(339, 301, 70, 28);
+		portNumberInput.setBounds(17, 174, 70, 28);
 		frame.getContentPane().add(portNumberInput);
 		portNumberInput.setColumns(10);
 		
 		JLabel lblPortNumber = new JLabel("Port Number");
-		lblPortNumber.setBounds(249, 307, 79, 16);
+		lblPortNumber.setBounds(17, 159, 79, 16);
 		frame.getContentPane().add(lblPortNumber);
 	}
 }
