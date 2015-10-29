@@ -202,7 +202,7 @@ public class VideoReceiverUI {
 		savePathInput.setBounds(17, 59, 274, 28);
 		frame.getContentPane().add(savePathInput);
 		savePathInput.setColumns(10);
-
+		savePathInput.setText(System.getProperty("user.dir"));
 		
 		portNumberInput = new JTextField();
 		portNumberInput.setText("8888");
