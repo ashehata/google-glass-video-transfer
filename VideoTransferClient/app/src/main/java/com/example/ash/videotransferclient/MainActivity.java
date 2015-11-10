@@ -1,4 +1,4 @@
-package com.example.alyshehata.videotransfer;
+package com.example.ash.videotransferclient;
 import com.google.android.glass.content.Intents;
 import com.google.android.glass.media.Sounds;
 import com.google.android.glass.widget.CardBuilder;
@@ -109,8 +109,8 @@ public class MainActivity extends Activity {
         mCardScroller.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                        startActivityForResult(intent, TAKE_PICTURE_REQUEST);
+                Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                startActivityForResult(intent, TAKE_PICTURE_REQUEST);
             }
         });
         setContentView(mCardScroller);
@@ -139,11 +139,6 @@ public class MainActivity extends Activity {
                     Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                     startActivityForResult(intent, TAKE_PICTURE_REQUEST);
                     break;
-                case R.id.stop_recording_item:
-                    Log.d("VOICE", "STOP");
-                    // handle top-level dogs menu item
-                    break;
-
             }
 
             return true;

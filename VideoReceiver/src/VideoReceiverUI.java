@@ -78,7 +78,7 @@ public class VideoReceiverUI {
 		
 		commandFileInput = new JTextField();
 		commandFileInput.setColumns(10);
-		commandFileInput.setBounds(17, 120, 274, 28);
+		commandFileInput.setBounds(17, 120, 485, 43);
 		frame.getContentPane().add(commandFileInput);
 		
 		JLabel lblSaveDirectory = new JLabel("Save Directory");
@@ -102,10 +102,6 @@ public class VideoReceiverUI {
 		});
 		btnNewButton.setBounds(292, 59, 117, 29);
 		frame.getContentPane().add(btnNewButton);
-				
-		JButton button = new JButton("Browse");
-		button.setBounds(292, 121, 117, 29);
-		frame.getContentPane().add(button);
 		
 		JLabel lblStatus = new JLabel("Status");
 		lblStatus.setBounds(17, 6, 61, 16);
@@ -166,8 +162,13 @@ public class VideoReceiverUI {
 				                fis.flush();
 				            }
 		
-				            System.out.println("File transfered...");
-				            client.close();
+				            //handle new file
+				            String command = commandFileInput.getText();
+				            command = command.replaceAll("@latestFile", f.getAbsolutePath().replaceAll("\\\\", "/"));
+				            System.out.println("Running command: " + command);
+							Runtime runTime = Runtime.getRuntime();
+							Process process = runTime.exec(command);
+							client.close();
 				            serverSocket.close();
 				            fis.close();
 				        }
@@ -182,7 +183,7 @@ public class VideoReceiverUI {
 			}
 				else{
 					try {
-			            if(!serverSocket.isClosed())
+			            if(serverSocket != null && !serverSocket.isClosed())
 			            	serverSocket.close();
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
@@ -206,12 +207,12 @@ public class VideoReceiverUI {
 		
 		portNumberInput = new JTextField();
 		portNumberInput.setText("8888");
-		portNumberInput.setBounds(17, 174, 70, 28);
+		portNumberInput.setBounds(17, 198, 70, 28);
 		frame.getContentPane().add(portNumberInput);
 		portNumberInput.setColumns(10);
 		
 		JLabel lblPortNumber = new JLabel("Port Number");
-		lblPortNumber.setBounds(17, 159, 79, 16);
+		lblPortNumber.setBounds(17, 171, 79, 16);
 		frame.getContentPane().add(lblPortNumber);
 	}
 }
