@@ -85,7 +85,7 @@ public class VideoReceiverUI {
 		lblSaveDirectory.setBounds(17, 45, 97, 16);
 		frame.getContentPane().add(lblSaveDirectory);
 		
-		JLabel commandLabel = new JLabel("Command File to run on Receive");
+		JLabel commandLabel = new JLabel("Command to run on Receive");
 		commandLabel.setBounds(17, 102, 274, 16);
 		frame.getContentPane().add(commandLabel);
 		
@@ -122,6 +122,7 @@ public class VideoReceiverUI {
 					// TODO Auto-generated catch block
 					e3.printStackTrace();
 				}
+				statusLabel.setText("Listening...");
 				listeningThread = new Thread(new Runnable(){
 					public void run(){
 						while (true){
@@ -164,6 +165,7 @@ public class VideoReceiverUI {
 		
 				            //handle new file
 				            String command = commandFileInput.getText();
+				            if (command.length() > 0){
 				            command = command.replaceAll("@latestFile", f.getAbsolutePath().replaceAll("\\\\", "/"));
 				            System.out.println("Running command: " + command);
 							Runtime runTime = Runtime.getRuntime();
@@ -171,6 +173,7 @@ public class VideoReceiverUI {
 							client.close();
 				            serverSocket.close();
 				            fis.close();
+				            }
 				        }
 				        catch (Exception e2){
 					        e2.printStackTrace();
@@ -178,6 +181,7 @@ public class VideoReceiverUI {
 						}
 						}}
 				);
+	            statusLabel.setText("Listening...");
 				listeningThread.start();
 				
 			}
@@ -189,7 +193,7 @@ public class VideoReceiverUI {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-					
+					statusLabel.setText("Not Listening");
 					listeningThread.stop();
 					btnStartListening.setText("Start Listening");
 				}
