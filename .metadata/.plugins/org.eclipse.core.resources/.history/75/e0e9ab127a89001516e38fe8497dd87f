@@ -72,13 +72,13 @@ public class VideoReceiverUI {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 589, 405);
+		frame.setBounds(100, 100, 528, 359);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
 		commandFileInput = new JTextField();
 		commandFileInput.setColumns(10);
-		commandFileInput.setBounds(17, 120, 566, 57);
+		commandFileInput.setBounds(17, 120, 485, 43);
 		commandFileInput.setText("cd  <LocationOfMatlabScript> & matlab -nodisplay -r <FunctionName>('@latestFile') & exit");
 		frame.getContentPane().add(commandFileInput);
 		
@@ -217,7 +217,7 @@ public class VideoReceiverUI {
 		portNumberInput.setColumns(10);
 		
 		JLabel lblPortNumber = new JLabel("Port Number");
-		lblPortNumber.setBounds(17, 182, 79, 16);
+		lblPortNumber.setBounds(17, 171, 79, 16);
 		frame.getContentPane().add(lblPortNumber);
 	}
 }
