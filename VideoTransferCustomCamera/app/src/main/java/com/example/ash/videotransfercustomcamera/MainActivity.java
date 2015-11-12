@@ -1,4 +1,4 @@
-package com.example.ash.videotransferclient;
+package com.example.ash.videotransfercustomcamera;
 import com.google.android.glass.content.Intents;
 import com.google.android.glass.media.Sounds;
 import com.google.android.glass.widget.CardBuilder;
@@ -109,8 +109,8 @@ public class MainActivity extends Activity {
         mCardScroller.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                startActivityForResult(intent, TAKE_PICTURE_REQUEST);
+                Intent intent = new Intent(mView.getContext(), CameraManager.class);
+                startActivity(intent);
             }
         });
         setContentView(mCardScroller);
@@ -136,9 +136,8 @@ public class MainActivity extends Activity {
             switch (item.getItemId()) {
                 case R.id.start_recording_item:
                     Log.d("VOICE", "START");
-                    Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                    intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 15);
-                    startActivityForResult(intent, TAKE_PICTURE_REQUEST);
+                    Intent intent = new Intent(mView.getContext(), CameraManager.class);
+                    startActivity(intent);
                     break;
             }
 
@@ -168,120 +167,10 @@ public class MainActivity extends Activity {
         return card.getView();
     }
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == TAKE_PICTURE_REQUEST && resultCode == RESULT_OK) {
-            String videoPath = data.getStringExtra(Intents.EXTRA_VIDEO_FILE_PATH);
-            new VideoSender(videoPath, this).execute();
+//        if (requestCode == TAKE_PICTURE_REQUEST && resultCode == RESULT_OK) {
+//            String videoPath = data.getStringExtra(Intents.EXTRA_VIDEO_FILE_PATH);
+//            new VideoSender(videoPath, this).execute();
         }
 
-        super.onActivityResult(requestCode, resultCode, data);
+//        super.onActivityResult(requestCode, resultCode, data);
     }
-
-}
-
-
-class VideoSender extends AsyncTask<Void, Integer, Integer> {
-    private String filePath;
-    private Activity myActivity;
-    private ProgressDialog dialog;
-    private AlertDialog successDialog;
-    private AlertDialog errorDialog;
-    private boolean success = false;
-    AlertDialog.Builder builder;
-    VideoSender(String path, Activity activity){
-        myActivity = activity;
-        filePath = path;
-        dialog = new ProgressDialog(activity);
-        dialog.setTitle("Uploading...");
-        dialog.setCancelable(true);
-        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        dialog.setProgressNumberFormat(null);
-        dialog.setProgressPercentFormat(null);
-        dialog.setIndeterminate(false);
-        dialog.setProgress(0);
-    }
-    @Override
-    protected void onPreExecute(){
-        builder = new AlertDialog.Builder(myActivity);
-        builder.setMessage("Error!")
-                .setCancelable(false)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
-        errorDialog = builder.create();
-        builder.setMessage("Success!")
-                .setCancelable(false)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
-        successDialog = builder.create();
-        dialog.show();
-    }
-    @Override
-    protected void onPostExecute(Integer result) {
-        dialog.dismiss();
-        if (success){
-            successDialog.show();
-        }
-        else{
-            errorDialog.show();
-        }
-        if (result == -1) {
-            System.exit(0);
-        }
-    }
-
-    @Override
-    protected void onProgressUpdate(Integer... progress) {
-        dialog.setProgress(progress[0]);
-    }
-
-    @Override
-    protected Integer doInBackground(Void... params) {
-        Socket s = null;
-        ObjectOutputStream get = null;
-        try {
-            try {
-                s = new Socket("192.168.1.84", 8888);
-            }
-            catch (ConnectException connectionFailed){
-                System.out.println("Failed to connect!");
-                return 0;
-            }
-            get = new ObjectOutputStream(s.getOutputStream());
-            long u = 0;
-            long fileLength = new File(filePath).length();
-            FileInputStream fileInputStream  = new FileInputStream(filePath);
-            byte[] buf=new byte[8192];
-            int bytesread = 0, bytesBuffered = 0;
-            while( (bytesread = fileInputStream.read( buf )) > -1 ) {
-                get.write( buf, 0, bytesread );
-                bytesBuffered += bytesread;
-                u = u + bytesread;
-                publishProgress((int) (u * 100 / fileLength));
-                if (bytesBuffered > 1024 * 1024) { //flush after 1MB
-                    bytesBuffered = 0;
-                    get.flush();
-                }
-            }
-            success = true;
-            if (get != null) {
-                get.close();
-                get.flush();
-            }
-            if (s != null) {
-                s.close();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        finally {
-
-        }
-        return 0;
-    }
-}

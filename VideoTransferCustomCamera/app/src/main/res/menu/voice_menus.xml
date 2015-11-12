@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Use the constants defined in the ContextualMenus.Command enum-->
+    <item
+        android:id="@+id/start_recording_item"
+        android:title="Start Recording" />
+    <item
+        android:id="@+id/stop_recording_item"
+        android:title="Stop Recording" />
+
+</menu>
