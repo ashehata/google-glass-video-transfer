@@ -61,7 +61,7 @@ import android.widget.Toast;
 
 
 class Params{
-    public static String ipAddress = "10.20.44.173";
+    public static String ipAddress = "192.168.1.198";
 }
 
 public class MainActivity extends Activity {
